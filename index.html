@@ -3,254 +3,620 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>三星堆文物 | 深度探索</title>
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Lightbox2 -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet" />
+    <title>智能文档问答系统 - 基于知识图谱的多层次检索</title>
     <style>
-        :root {
-            --primary-dark: #1c2833;
-            --primary-light: #f4f7f9;
-            --accent: #ffd700;
-            --font-main: 'Noto Sans SC', sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        html { scroll-behavior: smooth; }
-        body { margin: 0; font-family: var(--font-main); background-color: var(--primary-light); color: #333; }
-        nav { backdrop-filter: saturate(180%) blur(10px); background-color: rgba(28,40,51, 0.85); }
-        nav .nav-link { transition: color 0.2s; }
-        nav .nav-link:hover { color: var(--accent); }
-        .hero { position: relative; width: 100%; height: 60vh; background: url('https://vcg02.cfp.cn/creative/vcg/nowater800/new/VCG211365202102.jpg?x-oss-process=image/format,webp') center/cover no-repeat fixed; }
-        .hero::before { content: ''; position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
-        .hero .container { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; }
-        .hero h1 { font-size: 3rem; font-weight: bold; text-shadow: 0 2px 6px rgba(0,0,0,0.7); }
-        .hero p { font-size: 1.25rem; }
-        main section { padding: 2rem 0; }
-        main h2 { position: relative; font-size: 2rem; margin-bottom: 1rem; }
-        main h2::after { content: ''; position: absolute; left: 0; bottom: -0.5rem; width: 3rem; height: 0.25rem; background: var(--accent); }
-        .artifact-card { transition: transform 0.3s, box-shadow 0.3s; }
-        .artifact-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-        
-        .timeline { position: relative; padding: 1rem 0; }
-        .timeline::before { content: ''; position: absolute; top: 1rem; left: 2rem; bottom: 1rem; width: 4px; background: var(--primary-dark); }
-        .timeline-item { 
-            position: relative; 
-            margin-left: 4rem; 
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background: rgba(255,215,0,0.1);
-            border-radius: 8px;
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow-x: hidden;
         }
-        .timeline-item::before { content: ''; position: absolute; top: 0.25rem; left: -2.15rem; width: 1rem; height: 1rem; background: var(--accent); border-radius: 50%; }
-        .media-wrapper { margin-top: 1rem; }
-        .video-wrapper { 
-            position: relative; 
-            width: 100%; 
-            padding-top: 56.25%; 
-            border-radius: 0.5rem; 
-            overflow: hidden; 
-            background: #000; 
-            margin-bottom: 2rem;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
-        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-        .chat-wrapper {
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: fixed;
             width: 100%;
-            min-height: 700px;
-            height: 80vh;
-            margin: 2rem 0;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-            border-radius: 0.5rem;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ffd700;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
             overflow: hidden;
         }
-        .accordion-button::after { filter: invert(1); }
-        footer { background: var(--primary-dark); color: #fff; text-align: center; padding: 2rem 1rem; }
-        footer a { color: var(--accent); text-decoration: none; }
-        
-        /* 精选文物图片优化 */
-        .artifact-card img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            transition: transform 0.3s ease;
+
+        .hero-content {
+            z-index: 2;
+            max-width: 800px;
         }
-        .artifact-card:hover img {
-            transform: scale(1.03);
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.3s forwards;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.6s forwards;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Floating Elements */
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 30%;
+            animation-delay: 4s;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 5rem 0;
+            background: white;
+        }
+
+        .section:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #2c3e50;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        /* Architecture Section */
+        .architecture {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .arch-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .arch-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .arch-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .arch-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-top: 4px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-top-color: #667eea;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Process Flow */
+        .process-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .process-step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .process-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .process-step::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 35px;
+            font-size: 2rem;
+            color: #667eea;
+        }
+
+        .process-step:last-child::after {
+            display: none;
+        }
+
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            transform: perspective(1000px) rotateY(0deg);
+            transition: transform 0.6s ease;
+        }
+
+        .stat-card:hover {
+            transform: perspective(1000px) rotateY(10deg);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 2rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: '💻';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .process-flow {
+                flex-direction: column;
+            }
+            
+            .process-step::after {
+                content: '↓';
+                right: auto;
+                top: 90px;
+            }
+        }
+
+        /* Scroll Animations */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <!-- 导航 -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">三星堆探索</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#intro">简介</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#featured">精选文物</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#timeline">时间线</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#media">媒体</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#chat">AI对话</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#faq">常见问题</a></li>
+    <!-- Header -->
+    <header class="header">
+        <nav class="container">
+            <div class="nav">
+                <a href="#" class="logo">🧠 智能问答系统</a>
+                <ul class="nav-links">
+                    <li><a href="#features">特性</a></li>
+                    <li><a href="#architecture">架构</a></li>
+                    <li><a href="#process">流程</a></li>
+                    <li><a href="#performance">性能</a></li>
                 </ul>
             </div>
-        </div>
-    </nav>
-
-    <!-- 英雄区 -->
-    <header class="hero">
-        <div class="container">
-            <h1>三星堆：古蜀文明的瑰宝</h1>
-            <p>穿越三千年，追寻神秘遗迹</p>
-        </div>
+        </nav>
     </header>
 
-    <main class="container mt-5">
-        <!-- 简介 -->
-        <section id="intro">
-            <h2>简介</h2>
-            <p>三星堆遗址位于四川广汉，年代可追溯至公元前12世纪。自1986年发掘以来，出土数千件青铜、金、玉器，揭示了古蜀王国的独特文化与精湛工艺。</p>
-        </section>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="hero-content">
+            <h1>智能文档问答系统</h1>
+            <p>基于知识图谱的多层次检索技术，将RAG检索准确率从60%提升至95%</p>
+            <a href="#features" class="cta-button">探索系统特性</a>
+        </div>
+    </section>
 
-        <!-- 精选文物 -->
-        <section id="featured">
-            <h2>精选文物</h2>
-            <div class="row g-4">
-                <div class="col-md-4">
-                    <div class="card artifact-card">
-                        <img src="https://vcg02.cfp.cn/creative/vcg/nowater800/new/VCG211321265043.jpg?x-oss-process=image/format,webp" class="card-img-top" alt="青铜面具">
-                        <div class="card-body">
-                            <h5 class="card-title">青铜面具</h5>
-                            <p class="card-text">突出眼睛的祭祀面具，约公元前12世纪。</p>
-                        </div>
-                    </div>
+    <!-- Features Section -->
+    <section id="features" class="section">
+        <div class="container">
+            <h2 class="section-title reveal">🚀 核心特性</h2>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="feature-icon">🎯</div>
+                    <h3>多层次检索</h3>
+                    <p>精确匹配、关键词检索、概念扩展、图遍历四重保障，确保检索准确性</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="card artifact-card">
-                        <img src="https://vcg05.cfp.cn/creative/vcg/nowater800/new/VCG211563400444.jpg?x-oss-process=image/format,webp" class="card-img-top" alt="金面具">
-                        <div class="card-body">
-                            <h5 class="card-title">金面具</h5>
-                            <p class="card-text">象征权力与神圣的精致金面具。</p>
-                        </div>
-                    </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">🧠</div>
+                    <h3>智能意图分析</h3>
+                    <p>自动识别查询意图，提取关键实体，生成最优搜索策略</p>
                 </div>
-                <div class="col-md-4">
-                    <div class="card artifact-card">
-                        <img src="https://vcg02.cfp.cn/creative/vcg/nowater800/new/VCG211563382516.jpg?x-oss-process=image/format,webp" class="card-img-top" alt="青铜神树">
-                        <div class="card-body">
-                            <h5 class="card-title">青铜神树</h5>
-                            <p class="card-text">高达3.95米，反映古蜀人宇宙观。</p>
-                        </div>
-                    </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">🕸️</div>
+                    <h3>知识图谱增强</h3>
+                    <p>构建实体关系网络，发现隐含关联，实现语义层面的内容理解</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">⚡</div>
+                    <h3>高性能处理</h3>
+                    <p>异步并发架构，支持大规模文档处理，毫秒级响应时间</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">📊</div>
+                    <h3>质量评估</h3>
+                    <p>多维度答案质量评估，可追溯的来源信息，确保结果可信度</p>
+                </div>
+                <div class="feature-card reveal">
+                    <div class="feature-icon">🔧</div>
+                    <h3>高度可配置</h3>
+                    <p>灵活的参数配置，支持不同场景的定制化部署</p>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- 时间线 -->
-        <section id="timeline">
-            <h2>历史时间线</h2>
-            <div class="timeline">
-                <div class="timeline-item">
-                    <h5>约公元前2800年</h5>
-                    <p>三星堆文化开始</p>
+    <!-- Architecture Section -->
+    <section id="architecture" class="section">
+        <div class="container">
+            <h2 class="section-title reveal">🏗️ 系统架构</h2>
+            <div class="architecture">
+                <div class="arch-card reveal">
+                    <div class="arch-icon">📄</div>
+                    <h3>文档处理层</h3>
+                    <ul>
+                        <li>智能文档分块</li>
+                        <li>实体关系提取</li>
+                        <li>关键词识别</li>
+                        <li>概念层次构建</li>
+                    </ul>
                 </div>
-                <div class="timeline-item">
-                    <h5>约公元前1250年</h5>
-                    <p>埋藏大型青铜雕像</p>
+                <div class="arch-card reveal">
+                    <div class="arch-icon">🕸️</div>
+                    <h3>知识图谱层</h3>
+                    <ul>
+                        <li>实体关系网络</li>
+                        <li>概念层次结构</li>
+                        <li>语义关联分析</li>
+                        <li>图遍历算法</li>
+                    </ul>
                 </div>
-                <div class="timeline-item">
-                    <h5>约公元前1100年</h5>
-                    <p>三星堆文化结束</p>
+                <div class="arch-card reveal">
+                    <div class="arch-icon">🔍</div>
+                    <h3>检索引擎层</h3>
+                    <ul>
+                        <li>多策略检索</li>
+                        <li>智能结果融合</li>
+                        <li>相关性排序</li>
+                        <li>上下文优化</li>
+                    </ul>
                 </div>
-                <div class="timeline-item">
-                    <h5>1927年</h5>
-                    <p>遗址首次发现</p>
-                </div>
-                <div class="timeline-item">
-                    <h5>1934年</h5>
-                    <p>首次科学发掘</p>
-                </div>
-                <div class="timeline-item">
-                    <h5>1986年</h5>
-                    <p>发掘1号和2号坑</p>
-                </div>
-                <div class="timeline-item">
-                    <h5>1997年</h5>
-                    <p>博物馆开放</p>
-                </div>
-                <div class="timeline-item">
-                    <h5>2020年</h5>
-                    <p>发现新祭祀坑</p>
-                </div>
-                <div class="timeline-item">
-                    <h5>2021年</h5>
-                    <p>发掘500多件文物</p>
-                </div>
-            </div>  
-        </section>
-
-<section id="chat">
-    <h2>AI对话</h2>
-    <div class="chat-wrapper">
-        <iframe 
-            src="https://udify.app/chat/pIZnWBnDA20bdpry" 
-            width="100%" 
-            height="100%" 
-            allow="microphone"
-        ></iframe>
-    </div>
-</section>
-
-
-        <!-- 常见问题 -->
-        <section id="faq">
-            <h2>常见问题</h2>
-            <div class="accordion" id="faqAccordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="faqHeading1">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">如何到达三星堆博物馆？</button>
-                    </h2>
-                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">三星堆博物馆位于四川广汉市，可乘坐高铁至成都东站，再转乘地铁或公交直达。</div>
-                    </div>
-                </div>
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="faqHeading2">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">开放时间是？</button>
-                    </h2>
-                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                        <div class="accordion-body">每日8:30-18:00（17:00停止入场），周一不闭馆。</div>
-                    </div>
+                <div class="arch-card reveal">
+                    <div class="arch-icon">🤖</div>
+                    <h3>问答生成层</h3>
+                    <ul>
+                        <li>意图理解</li>
+                        <li>上下文整合</li>
+                        <li>答案生成</li>
+                        <li>质量评估</li>
+                    </ul>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
 
-    <!-- 页脚 -->
-    <footer id="footer">
-        <p>由 CAPAL 实验室制作。了解更多，请访问 <a href="https://www.sxd.cn/en/" target="_blank">三星堆博物馆官网</a></p>
-    </footer>
+    <!-- Process Flow -->
+    <section id="process" class="section">
+        <div class="container">
+            <h2 class="section-title reveal">🔄 处理流程</h2>
+            <div class="process-flow reveal">
+                <div class="process-step">
+                    <div class="process-circle">1</div>
+                    <h4>查询分析</h4>
+                    <p>意图识别<br>实体提取</p>
+                </div>
+                <div class="process-step">
+                    <div class="process-circle">2</div>
+                    <h4>多层检索</h4>
+                    <p>精确匹配<br>语义搜索</p>
+                </div>
+                <div class="process-step">
+                    <div class="process-circle">3</div>
+                    <h4>结果融合</h4>
+                    <p>智能排序<br>权重计算</p>
+                </div>
+                <div class="process-step">
+                    <div class="process-circle">4</div>
+                    <h4>答案生成</h4>
+                    <p>上下文整合<br>质量保证</p>
+                </div>
+            </div>
 
-    <!-- 脚本 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+            <div class="code-block reveal">
+                <pre><code># 快速开始使用
+python main.py --mode full
+
+# 交互式问答
+python main.py --mode interactive
+
+# 自定义测试
+python main.py --mode test --questions "如何配置系统？" "支持哪些功能？"</code></pre>
+            </div>
+        </div>
+    </section>
+
+
     <script>
-        // 图片悬停效果
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.artifact-card');
-            cards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-10px)';
-                    this.style.boxShadow = '0 12px 24px rgba(0,0,0,0.2)';
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 8px 20px rgba(0,0,0,0.1)';
-                });
+        // Scroll animations
+        function reveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            
+            for (let i = 0; i < reveals.length; i++) {
+                const windowHeight = window.innerHeight;
+                const elementTop = reveals[i].getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add('active');
+                } else {
+                    reveals[i].classList.remove('active');
+                }
+            }
+        }
+
+        window.addEventListener('scroll', reveal);
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
         });
+
+        // Header background on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.backdropFilter = 'blur(20px)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.1)';
+                header.style.backdropFilter = 'blur(10px)';
+            }
+        });
+
+        // Initialize animations
+        reveal();
     </script>
 </body>
 </html>
